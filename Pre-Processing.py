@@ -58,7 +58,6 @@ freq = word_frequency("CBtrain_processed.txt") #get word frequency
 singletons = {word for word, count in freq.items() if count == 1} #dictionary for singletons
 print(f"{len(singletons)} singleton words to be replaced with <unk>.")
 
-# Apply replacement of singletons in training data
 replace_singletons("CBtrain_processed.txt", singletons) #replace singletons with <unk>
 
 # Get the count of <unk> in the training data
@@ -73,12 +72,10 @@ def replace_unknowns(test, train):
     with open(test, 'w') as file:
         file.write("\n".join(lines) + "\n")  # Overwrite file
 
-# Extract final vocabulary from test
 train= set(word_frequency("CBtrain_processed.txt").keys())
 
 # Apply replacement in test data
 replace_unknowns("CBtest_processed.txt", train)
-
 print("Replaced unseen words with <unk> in test data")
 
 
