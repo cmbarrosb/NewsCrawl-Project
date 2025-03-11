@@ -9,12 +9,15 @@
     #Functions:
 
 #Importing libraries
+import json
+import math
+import os
 from collections import Counter, defaultdict 
 
 print("Welcome user! This script is used to train the language model using the training data.")
 while True:
     print("\n")
-    print("Enter the number of the language model you want to train: ")
+    print("Enter the number of the language model you want to work with: ")
     print("1. Unigram Language Model")
     print("2. Bigram Language Model")
     print("3. Bigram Language Model with Add-One Smoothing")
@@ -24,37 +27,59 @@ while True:
 
      #1. Unigram Language Model
     if switch == "1":
-        print("\nTraining Unigram Language Model...")
+        unigram_file = "unigram_model.json"
+        print("\nUnigram Language Model selected...")
 
-        #Function to train the Unigram Model
-        def train_unigram(train):
-            #variables to store word counts and total words
-            word_counts = Counter()
-            total_words = 0
-            #handling the training data
-            with open(train, 'r') as file:
-                for line in file:
-                    words = line.strip().split()
-                    word_counts.update(words)
-                    total_words += len(words)
+        if os.path.exists(unigram_file):
+            print(" A saved unigram model exists. What would you like to do?")
+            print("1. Train a new model")
+            print("2. Load an existing model")
+            user_choice = input("Enter your choice (1/2): ").strip()
+        else:
+            print("No existing model found. You must train a new model.")
+            user_choice = "1"
 
-            unigram_prob = {} #dictionary to store unigram probabilities
+        if user_choice == "1":
+            print("Training Unigram Language Model...")
+            
 
-            for word, count in word_counts.items():
-                unigram_prob[word] = count / total_words #probability of each word according to MLE formula
+            #This function checks if theres an existing unigram model or allows you to train a new one. 
+            def train_unigram(train, save_file=unigram_file):
+                #variables to store word counts and total words
+                word_counts = Counter()
+                total_words = 0
+                with open(train, 'r') as file: #handling the training data
+                    for line in file:
+                        words = line.strip().split()
+                        word_counts.update(words)
+                        total_words += len(words)
+                unigram_model = {} #dictionary to store unigram probabilities
 
-            return unigram_prob, word_counts, total_words
+                #probability of each word
+                for word, count in word_counts.items():
+                    unigram_model[word] = count / total_words 
+
+                # Save model to JSON
+                with open(save_file, "w") as f:
+                    json.dump(unigram_model, f, indent=4)
+
+                print("Trained and saved Unigram Model successfully.")
+                return unigram_model
+            
+        elif user_choice == "2":
+                print("Loading existing unigram model...")
+                with open(unigram_file, 'r') as file:
+                    unigram_model = json.load(file)
 
         # Train the Unigram Model
-        unigram_model, word_counts, total_words = train_unigram("CBtrain_processed.txt")
-
-        # Compute the sum of all unigram probabilities
+        unigram_model = train_unigram("CBtrain_processed.txt")
+        # Compute the sum of all unigram probabilities (must equal one)
         prob_sum = sum(unigram_model.values())
 
         # Print results. Total probability should be 1.
-        print(f"\n✅ Success!!")
+        print(f"\nSuccess!!")
         print(f"Sum of unigram probabilities: {prob_sum:.6f}")  # Format to 6 decimal places
-        print(f"Total Words in Corpus: {total_words}")
+        print(f"Total words in Corpus:{len(unigram_model)}")
 
 
     #2. Bigram Language Model
