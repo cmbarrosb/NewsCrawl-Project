@@ -6,6 +6,7 @@
 #   4. replace_unknowns(test, train): Replaces words in the test data that are not present in the training data with the token <unk>.
 #   5. verify(file_path): Counts the total number of words and lines in the file to verify that padding has been successfully added.
 
+from collections import Counter #importing counter to count the frequency of words
 
 
 #1.Function to automate padding
@@ -14,10 +15,7 @@ def add_pad(input, out):
         for line in old:
             pad_sentence = f"<s> {line.strip()} </s>" #removes whitespace and adds padding
             new.write(pad_sentence + "\n")
-
-add_pad("train.txt", "CBtrain_processed.txt")
-add_pad("test.txt", "CBtest_processed.txt")
-print("Padding added ")
+    print("Padding added ")
 
 
 
@@ -29,13 +27,11 @@ def lowercase(file_path):
     with open(file_path, 'w') as file:
         file.write("\n".join(lines) + "\n")  # Overwrite file with lowercased text
 
-lowercase("CBtrain_processed.txt")
-lowercase("CBtest_processed.txt")
-print("Lowercase applied")
+    print("Lowercase applied")
 
 
 # 3. Function to replace singleton words with token <unk> in the training data
-from collections import Counter #importing counter to count the frequency of words
+
 # 3.1 Count word frequencies in training data
 def word_frequency(file_path):
     word_freq = Counter()
@@ -47,22 +43,15 @@ def word_frequency(file_path):
 
 # 3.2  Replace singleton words with <unk> 
 def replace_singletons(file_path, singletons):
+    lines = []
     with open(file_path, 'r', encoding='utf-8') as file:
-        lines = [" ".join("<unk>" if word in singletons else word for word in line.strip().split()) for line in file]
+        for line in file:
+            words = line.strip().split()
+            processed_words = ["<unk>" if word in singletons else word for word in words]
+            processed_line = " ".join(processed_words)
+            lines.append(processed_line)
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write("\n".join(lines) + "\n")  # Overwrite file
-
-freq = word_frequency("CBtrain_processed.txt") #get word frequency
-
-# Identify singletons
-singletons = {word for word, count in freq.items() if count == 1} #dictionary for singletons
-print(f"{len(singletons)} singleton words to be replaced with <unk>.")
-
-replace_singletons("CBtrain_processed.txt", singletons) #replace singletons with <unk>
-
-# Get the count of <unk> in the training data
-unk_count = word_frequency("CBtrain_processed.txt")["<unk>"]
-print(f"Count of <unk> in training data: {unk_count}")
 
 
 #4 Function to repace unique words in test data with <unk>
@@ -77,15 +66,6 @@ def replace_unknowns(test, train):
     with open(test, 'w') as file:
         file.write("\n".join(lines) + "\n")  # Overwrite file
 
-train= set(word_frequency("CBtrain_processed.txt").keys())
-
-# Apply replacement in test data
-replace_unknowns("CBtest_processed.txt", train)
-print("Replaced unseen words with <unk> in test data")
-
-
-
-
 # 5.Function to count total words and lines in a file to verify successfully added padding
 def verify(file_path):
     word_count = 0
@@ -97,19 +77,58 @@ def verify(file_path):
             line_count += 1  # count lines
     return word_count, line_count
 
-# Count words and lines in original and processed files
-original_train_words, original_train_lines = verify("train.txt")
-original_test_words, original_test_lines = verify("test.txt")
-processed_train_words, processed_train_lines = verify("CBtrain_processed.txt")
-processed_test_words, processed_test_lines = verify("CBtest_processed.txt")
 
-#added 2 words per line and need to normalize the count
-expected_train_words = original_train_words + (2 * original_train_lines)
-expected_test_words = original_test_words + (2 * original_test_lines)
+# User interface for pre-processing options
+while True:
+    print("\n")
+    print("Select a pre-processing option:")
+    print("1 - Automate padding (<s> and </s>)")
+    print("2 - Convert text to lowercase")
+    print("3 - Replace singletons in training data")
+    print("4 - Replace unknown words in test data")
+    print("5 - Verify padding and word counts")
+    print("6 - Exit")
+    choice = input("Enter your choice: ").strip()
 
-#verification
-if(expected_train_words == processed_train_words and expected_test_words == processed_test_words):
-    print(f"Expected Processed Train Words: {expected_train_words}, Actual: {processed_train_words}")
-    print(f"Expected Processed Test Words: {expected_test_words}, Actual: {processed_test_words}")
-else:
-    print("Error: Padding not added correctly")
+    if choice == "1":
+        add_pad("train.txt", "CBtrain_processed.txt")
+        add_pad("test.txt", "CBtest_processed.txt") 
+
+    elif choice == "2":  
+        lowercase("CBtrain_processed.txt")
+        lowercase("CBtest_processed.txt")
+
+    elif choice == "3":
+        freq = word_frequency("CBtrain_processed.txt") #get word frequency
+        # Identify singletons
+        singletons = {word for word, count in freq.items() if count == 1} #dictionary for singletons
+        print(f"{len(singletons)} singleton words to be replaced with <unk>.")
+        replace_singletons("CBtrain_processed.txt", singletons) #replace singletons with <unk>
+
+    elif choice == "4":
+        train= set(word_frequency("CBtrain_processed.txt").keys())
+        # Apply replacement in test data
+        replace_unknowns("CBtest_processed.txt", train)
+        print("Replaced unseen words with <unk> in test data")  # Function to replace unknowns
+
+    elif choice == "5":
+        # Count words and lines in original and processed files
+        original_train_words, original_train_lines = verify("train.txt")
+        original_test_words, original_test_lines = verify("test.txt")
+        processed_train_words, processed_train_lines = verify("CBtrain_processed.txt")
+        processed_test_words, processed_test_lines = verify("CBtest_processed.txt")
+
+        #added 2 words per line and need to normalize the count
+        expected_train_words = original_train_words + (2 * original_train_lines)
+        expected_test_words = original_test_words + (2 * original_test_lines)
+        # Display counts
+        print(f"Expected Train: {expected_train_words} words,Actual: {processed_train_words}" )
+        print(f"Expected Test: {expected_test_words} words, Actual: {processed_test_words}")
+        
+    elif choice == "6":
+        print("Exiting program.")
+        break
+    else:
+        print("Invalid choice.")
+        continue
+
