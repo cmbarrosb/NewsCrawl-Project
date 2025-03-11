@@ -67,8 +67,13 @@ print(f"Count of <unk> in training data: {unk_count}")
 
 #4 Function to repace unique words in test data with <unk>
 def replace_unknowns(test, train):
+    lines =[] #Store processed lines
     with open(test, 'r') as file:
-        lines = [" ".join("<unk>" if word not in train else word for word in line.strip().split())for line in file]
+        for line in file:
+            words = line.strip().split()  # Split the line into words
+            processed_words = ["<unk>" if word not in train else word for word in words]  # Replace unknown words
+            processed_line = " ".join(processed_words)  # Join words back into a sentence
+            lines.append(processed_line)  # Store processed sentence
     with open(test, 'w') as file:
         file.write("\n".join(lines) + "\n")  # Overwrite file
 
