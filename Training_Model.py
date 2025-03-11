@@ -44,7 +44,7 @@ while True:
             
 
             #This function checks if theres an existing unigram model or allows you to train a new one. 
-            def train_unigram(train, save_file=unigram_file):
+            def train_unigram(train):
                 #variables to store word counts and total words
                 word_counts = Counter()
                 total_words = 0
@@ -60,19 +60,20 @@ while True:
                     unigram_model[word] = count / total_words 
 
                 # Save model to JSON
-                with open(save_file, "w") as f:
+                with open(unigram_file, "w") as f:
                     json.dump(unigram_model, f, indent=4)
 
                 print("Trained and saved Unigram Model successfully.")
                 return unigram_model
             
+            # Train the Unigram Model
+            unigram_model = train_unigram("CBtrain_processed.txt")
+
         elif user_choice == "2":
                 print("Loading existing unigram model...")
                 with open(unigram_file, 'r') as file:
                     unigram_model = json.load(file)
 
-        # Train the Unigram Model
-        unigram_model = train_unigram("CBtrain_processed.txt")
         # Compute the sum of all unigram probabilities (must equal one)
         prob_sum = sum(unigram_model.values())
 
