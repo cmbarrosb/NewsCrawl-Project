@@ -51,7 +51,12 @@ def train_bigram(train):
                 bigram_list.append(bigram)  # Keep all occurrences
 
     bigram_counts = Counter(bigram_list)  # Count occurrences
-    bigram_model = {bigram: count / len(bigram_list) for bigram, count in bigram_counts.items()}
+    bigram_model = {}  # Initialize an empty dictionary
+    total_bigrams = len(bigram_list)  # Count all bigrams (including duplicates)
+
+    #  Loop through each bigram and compute probability
+    for bigram, count in bigram_counts.items():
+        bigram_model[bigram] = count / total_bigrams  # Compute probability
 
     # Save model to JSON
     bigram_file = "bi_" + train + ".json"
