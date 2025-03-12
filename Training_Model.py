@@ -15,7 +15,7 @@ import os
 from collections import Counter, defaultdict 
 
 #Functions:
-#This function checks if theres an existing unigram model or allows you to train a new one. 
+#Unigram Function
 def train_unigram(train):
     #variables to store word counts and total words
     word_counts = Counter()
@@ -57,6 +57,7 @@ def train_bigram(train):
         bigram_model[bigram] = count / unigram_counts[prev_word]
 
     # Save model to JSON
+    bigram_file = "bigram_model.json"
     with open(bigram_file, "w") as f:
         json.dump({str(k): v for k, v in bigram_model.items()}, f, indent=4)
 
@@ -80,6 +81,7 @@ while True:
 
      #1. Unigram Language Model
     if switch == "1":
+        #Check if unigram model exists
         unigram_file = "unigram_model.json"
         print("\nUnigram Language Model selected...")
 
@@ -95,6 +97,7 @@ while True:
         if uni_choice == "1":
             print(" Unigram Language Model...")
             
+#Here you can add your own training data
             # Train the Unigram Model
             unigram_model = train_unigram("CBtrain_processed.txt")
 
@@ -134,20 +137,21 @@ while True:
 
         if bi_choice == "1":
             print("Training Bigram Language Model...")
-            
+            # Train the Bigram Model
+            bigram_model, bigram_counts, unigram_counts = train_bigram("CBtrain_processed.txt")
+
         elif bi_choice == "2":
             print("Loading existing bigram model...")
             with open(bigram_file, "r") as f:
                 bigram_model = {eval(k): v for k, v in json.load(f).items()}
+
         else:
             print("Invalid input. Please enter a valid number.")
             continue
         
-        # Train the Bigram Model
-        bigram_model, bigram_counts, unigram_counts = train_bigram("CBtrain_processed.txt")
-
+    
         # Print sample bigram probabilities
-        print(f"\n✅ Success!!")
+        print(f"\n Success!!")
         print("\nBigram Model (first 10 probabilities):")
         for bigram, prob in list(bigram_model.items())[:10]:  # Show first 10 bigrams
             print(f"{bigram}: {prob:.6f}")
