@@ -68,6 +68,40 @@ def train_bigram(train):
     return bigram_model, bigram_counts
 
 
+def train_bigram_add_one(train):
+    bigram_list = []  # Store all bigram tokens
+
+    with open(train, 'r', encoding="utf-8") as file:
+        for line in file:
+            words = line.strip().split()
+            for i in range(len(words) - 1):
+                bigram = (words[i], words[i + 1])  
+                bigram_list.append(bigram)  # Keep all occurrences
+
+    bigram_counts = Counter(bigram_list)  # Count occurrences
+    vocab = len(set(bigram_counts.keys()))  # Vocabulary size (unique bigrams)
+
+    # Compute Add-One Smoothed Probabilities (Expanded for clarity)
+    bigram_model = {}
+    total_bigrams = len(bigram_list)  # Total occurrences of all bigrams
+
+    for bigram, count in bigram_counts.items():
+        bigram_model[bigram] = (count + 1) / (total_bigrams + vocab)  # Apply smoothing
+
+    # Save model to JSON
+    bigram_file = "bi_1_" + train + ".json"
+    with open(bigram_file, "w") as f:
+        json.dump(
+            {
+                "bigrams": [str(k) for k in bigram_list],  # Store all occurrences
+                "probabilities": {str(k): v for k, v in bigram_model.items()}
+            },
+            f, indent=4
+        )
+
+    print("Trained and saved Bigram Model with Add-One Smoothing successfully.")
+    return bigram_model, bigram_counts
+
 
 print("Welcome user! This script is used to train the language model using the training data.")
 print("Please make sure you have the training data in the same directory as this script.")
@@ -114,9 +148,19 @@ while True:
         # Print total unique bigrams
         print(f"\nTotal Unique Bigrams: {len(bigram_counts)}")
 
+    #3. Bigram Language Model with Add-One Smoothing
     elif switch == "3":
-        #3. Bigram Language Model with Add-One Smoothing
         print("\nTraining Bigram Language Model with Add-One Smoothing...")
+        bigram_add_one, bigram_counts = train_bigram_add_one(data_model)
+        
+        # Print sample bigram probabilities
+        print(f"\n Success!!")
+        print("\nBigram Model with Add-One Smoothing (first 10 probabilities):")
+        for bigram, prob in list(bigram_add_one.items())[:10]:  # Show first 10 bigrams
+            print(f"{bigram}: {prob:.4f}")
+
+        # Print total unique bigrams
+        print(f"\nTotal Unique Bigrams: {len(bigram_counts)}")
 
     elif switch == "0":
         print("Exiting the program...")
