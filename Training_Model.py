@@ -32,6 +32,7 @@ def train_unigram(train):
         unigram_model[word] = count / total_words 
 
     # Save model to JSON
+    unigram_file = "unigram_model_" + train + ".json"
     with open(unigram_file, "w") as f:
         json.dump(unigram_model, f, indent=4)
 
@@ -57,7 +58,7 @@ def train_bigram(train):
         bigram_model[bigram] = count / unigram_counts[prev_word]
 
     # Save model to JSON
-    bigram_file = "bigram_model.json"
+    bigram_file = "bigram_model" + train +".json"
     with open(bigram_file, "w") as f:
         json.dump({str(k): v for k, v in bigram_model.items()}, f, indent=4)
 
@@ -69,6 +70,9 @@ def train_bigram(train):
 print("Welcome user! This script is used to train the language model using the training data.")
 print("Please make sure you have the training data in the same directory as this script.")
 
+data_model= input("Enter the name of the file that you will work with:").strip()
+
+
 while True:
     print("\n")
     print("Enter the number of the language model you want to work with: ")
@@ -77,7 +81,6 @@ while True:
     print("3. Bigram Language Model with Add-One Smoothing")
     print("0. to exit the program.")
     switch = input()
-    print("You entered:", switch)
 
      #1. Unigram Language Model
     if switch == "1":
@@ -96,27 +99,25 @@ while True:
 
         if uni_choice == "1":
             print(" Unigram Language Model...")
-            
-#Here you can add your own training data
             # Train the Unigram Model
-            unigram_model = train_unigram("CBtrain_processed.txt")
+            unigram = train_unigram(data_model)
 
         elif uni_choice == "2":
                 print("Loading existing unigram model...")
                 with open(unigram_file, 'r') as file:
-                    unigram_model = json.load(file)
+                    unigram = json.load(file)
 
         else:
             print("Invalid input. Please enter a valid number.")
             continue
 
         # Compute the sum of all unigram probabilities (must equal one)
-        prob_sum = sum(unigram_model.values())
+        prob_sum = sum(unigram.values())
 
         # Print results. Total probability should be 1.
         print(f"\nSuccess!!")
         print(f"Sum of unigram probabilities: {prob_sum:.6f}")  # Format to 6 decimal places
-        print(f"Total words in Corpus:{len(unigram_model)}")
+        print(f"Total words in Corpus:{len(unigram)}")
 
         
 
@@ -130,7 +131,7 @@ while True:
             print(" A saved bigram model exists. What would you like to do?")
             print("1. Train a new model")
             print("2. Load an existing model")
-            bi_choice = input("Enter your choice (1/2): ").strip()
+            bi_choice = input("Enter your choice (1/2): ")
         else:
             print("No existing model found. You must train a new model.")
             bi_choice = "1"
@@ -138,12 +139,12 @@ while True:
         if bi_choice == "1":
             print("Training Bigram Language Model...")
             # Train the Bigram Model
-            bigram_model, bigram_counts, unigram_counts = train_bigram("CBtrain_processed.txt")
+            bigram, bigram_counts, unigram_counts = train_bigram(data_model)
 
         elif bi_choice == "2":
             print("Loading existing bigram model...")
             with open(bigram_file, "r") as f:
-                bigram_model = {eval(k): v for k, v in json.load(f).items()}
+                bigram = {eval(k): v for k, v in json.load(f).items()}
 
         else:
             print("Invalid input. Please enter a valid number.")
@@ -153,11 +154,11 @@ while True:
         # Print sample bigram probabilities
         print(f"\n Success!!")
         print("\nBigram Model (first 10 probabilities):")
-        for bigram, prob in list(bigram_model.items())[:10]:  # Show first 10 bigrams
+        for bigram, prob in list(bigram.items())[:10]:  # Show first 10 bigrams
             print(f"{bigram}: {prob:.6f}")
 
         # Print total unique bigrams
-        print(f"\nTotal Unique Bigrams: {len(bigram_model)}")
+        print(f"\nTotal Unique Bigrams: {len(bigram)}")
 
 
 
