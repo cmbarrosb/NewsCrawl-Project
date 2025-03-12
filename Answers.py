@@ -113,6 +113,9 @@ def compute_unseen_bigrams(train_bigram_file, test_bigram_file):
     # Please list all of the parameters required to compute the probabilities and show the complete calculation. Which of the parameters have zero values under each model? Use log base 2 in your calculations.
 
 
+#the following function loads the models from a json file and computer the log probabilities for the given sentence
+#The function returns the log probabilities for the unigram model, bigram model, and bigram model with Add-One smoothing.
+#The functions also offers calculations for the unseen bigrams in the bigram model and bigram model with Add-One smoothing.
 
 def log_probability(sentence, unigram_file, bigram_file, bigram_smooth):
     
@@ -142,28 +145,31 @@ def log_probability(sentence, unigram_file, bigram_file, bigram_smooth):
         prob_unigram = unigram_model.get(word, unigram_model["<unk>"])  # unseen words mapped to <unk>
         log_unigram += math.log2(prob_unigram)
 
-    # Compute bigram (MLE) and bigram with Add-One smoothing probabilities
+    # Compute bigram
     for i in range(1, len(sentence)):
         prev_word, current_word = sentence[i-1], sentence[i]
-        bigram_pair = (prev_word, current_word)
+        bigram_pair = (prev_word, current_word) #prev_word = n-1, current_word = n
 
-        # Bigram MLE probability (explicitly handle zero-probability scenario)
+        # Bigram probability 
         prob_bigram = bigram_model.get(bigram_pair, 0)
         if prob_bigram > 0:
             log_bigram += math.log2(prob_bigram)
-        else:
+        else: # unseen bigram, set log probability to negative infinity
             log_bigram = float('-inf')
+            break
 
-        # Bigram Add-One smoothing probability (explicitly handle unseen bigram)
+    # Compute bigram with Add-One smoothing
+    for i in range(1, len(sentence)):
+        prev_word, current_word = sentence[i-1], sentence[i]
+        bigram_pair = (prev_word, current_word) #prev_word = n-1, current_word = n
+
+        # Bigram Add-One 
         prob_smooth = bigram_smooth.get(bigram_pair)
-        if prob_smooth is None:  # unseen bigram, compute explicitly
+        if prob_smooth == 0 :  # unseen bigram, compute explicitly
             prob_smooth = 1 / (unigram_counts.get(prev_word, 0) + vocab_size)
         log_smooth += math.log2(prob_smooth)
 
     return log_unigram, log_bigram, log_smooth
-
-
-
 
 
 
@@ -200,6 +206,20 @@ while True:
         print(f"Unseen bigram types: {unseen_type_pct:.2f}%")
         print(f"Unseen bigram tokens: {unseen_token_pct:.2f}%")
 
+    elif question == "5":
+        # Prompt user for file names
+        data=input("Enter the file to compute log probabilities: ")
+        unigram_file = input("Enter the unigram JSON file name: ")
+        bigram_file = input("Enter the bigram JSON file name: ")
+        bigram_add_one_file = input("Enter the bigram (Add-One smoothing) JSON file name: ")`
+
+        # Compute log probabilities
+        log_unigram, log_bigram, log_smooth = log_probability(data, unigram_file, bigram_file, bigram_add_one_file)
+
+        # Display
+        print(f"Log Probability (Unigram Model): {log_unigram:.4f}")
+        print(f"Log Probability (Bigram MLE): {log_bigram if log_bigram != float('-inf') else '-inf (zero probability)'}")
+        print(f"Log Probability (Bigram Add-One Smoothing): {log_smooth:.4f}")
 
     elif question == "0":
         print("Exiting the program...")
