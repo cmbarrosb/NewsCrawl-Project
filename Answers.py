@@ -173,6 +173,8 @@ def log_probability(sentence, unigram_file, bigram_file, bigram_smooth):
 
 
 
+
+
 # Main function to interact with the user
 print("Welcome. This program will answer questions based on the pre-processing and training steps.")
 
