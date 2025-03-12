@@ -2,6 +2,7 @@
 
 
 import json
+import math
 from collections import Counter
 
 #Question 1:
@@ -113,6 +114,53 @@ def compute_unseen_bigrams(train_bigram_file, test_bigram_file):
 
 
 
+def log_probability(sentence, unigram_file, bigram_file, bigram_smooth):
+    
+    # Load unigram probabilities
+    with open(unigram_file, "r") as f:
+        unigram_model = json.load(f)
+
+    # Load bigram probabilities (MLE)
+    with open(bigram_file, "r") as f:
+        bigram_data = json.load(f)
+        bigram_model = {eval(k): v for k, v in bigram_data["probabilities"].items()}
+
+    # Load Add-One smoothing data
+    with open(bigram_smooth, "r") as f:
+        smooth_data = json.load(f)
+        bigram_smooth = {eval(k): v for k, v in smooth_data["probabilities"].items()}
+        unigram_counts = smooth_data["unigram_counts"]
+        vocab_size = smooth_data["vocab_size"]
+
+    # Initialize log probabilities
+    log_unigram = 0
+    log_bigram = 0
+    log_smooth = 0
+
+    # Compute unigram log probability
+    for word in sentence:
+        prob_unigram = unigram_model.get(word, unigram_model["<unk>"])  # unseen words mapped to <unk>
+        log_unigram += math.log2(prob_unigram)
+
+    # Compute bigram (MLE) and bigram with Add-One smoothing probabilities
+    for i in range(1, len(sentence)):
+        prev_word, current_word = sentence[i-1], sentence[i]
+        bigram_pair = (prev_word, current_word)
+
+        # Bigram MLE probability (explicitly handle zero-probability scenario)
+        prob_bigram = bigram_model.get(bigram_pair, 0)
+        if prob_bigram > 0:
+            log_bigram += math.log2(prob_bigram)
+        else:
+            log_bigram = float('-inf')
+
+        # Bigram Add-One smoothing probability (explicitly handle unseen bigram)
+        prob_smooth = bigram_smooth.get(bigram_pair)
+        if prob_smooth is None:  # unseen bigram, compute explicitly
+            prob_smooth = 1 / (unigram_counts.get(prev_word, 0) + vocab_size)
+        log_smooth += math.log2(prob_smooth)
+
+    return log_unigram, log_bigram, log_smooth
 
 
 
