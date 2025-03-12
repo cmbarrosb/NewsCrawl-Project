@@ -8,3 +8,6 @@ Mini test/Training_Model.py
 Mini test/train.txt
 Mini test/testpro.txt
 test/
+.DS_Store
+.gitignore
+
