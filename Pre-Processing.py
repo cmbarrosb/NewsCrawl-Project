@@ -90,33 +90,38 @@ while True:
     print("6 - Exit")
     choice = input("Enter your choice: ").strip()
 
+    train = input("Enter the training data file name: ").strip()
+    test = input("Enter the test data file name: ").strip()
+    processed_train = input("New name for the processed train file: ").strip()
+    processed_test = input("New name for the processed test file: ").strip
+    
     if choice == "1":
-        add_pad("train.txt", "CBtrain_processed.txt")
-        add_pad("test.txt", "CBtest_processed.txt") 
+        add_pad(train, processed_train)
+        add_pad(test, processed_test)
 
     elif choice == "2":  
-        lowercase("CBtrain_processed.txt")
-        lowercase("CBtest_processed.txt")
+        lowercase(processed_train)
+        lowercase(processed_test)
 
     elif choice == "3":
-        freq = word_frequency("CBtrain_processed.txt") #get word frequency
+        freq = word_frequency(processed_train) #get word frequency
         # Identify singletons
         singletons = {word for word, count in freq.items() if count == 1} #dictionary for singletons
         print(f"{len(singletons)} singleton words to be replaced with <unk>.")
-        replace_singletons("CBtrain_processed.txt", singletons) #replace singletons with <unk>
+        replace_singletons(processed_train, singletons) #replace singletons with <unk>
 
     elif choice == "4":
-        train= set(word_frequency("CBtrain_processed.txt").keys())
+        train= set(word_frequency(processed_train).keys())
         # Apply replacement in test data
-        replace_unknowns("CBtest_processed.txt", train)
+        replace_unknowns(processed_test, train)
         print("Replaced unseen words with <unk> in test data")  # Function to replace unknowns
 
     elif choice == "5":
         # Count words and lines in original and processed files
-        original_train_words, original_train_lines = verify("train.txt")
-        original_test_words, original_test_lines = verify("test.txt")
-        processed_train_words, processed_train_lines = verify("CBtrain_processed.txt")
-        processed_test_words, processed_test_lines = verify("CBtest_processed.txt")
+        original_train_words, original_train_lines = verify(train)
+        original_test_words, original_test_lines = verify(test)
+        processed_train_words, processed_train_lines = verify(processed_train)
+        processed_test_words, processed_test_lines = verify(processed_test)
 
         #added 2 words per line and need to normalize the count
         expected_train_words = original_train_words + (2 * original_train_lines)
