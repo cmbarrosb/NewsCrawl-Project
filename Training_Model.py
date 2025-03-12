@@ -32,7 +32,7 @@ def train_unigram(train):
         unigram_model[word] = count / total_words 
 
     # Save model to JSON
-    unigram_file = "unigram_model_" + train + ".json"
+    unigram_file = "uni_" + train + ".json"
     with open(unigram_file, "w") as f:
         json.dump(unigram_model, f, indent=4)
 
@@ -41,29 +41,31 @@ def train_unigram(train):
 
 #Bigram Function
 def train_bigram(train):
-    unigram_counts = Counter()  # Store word frequencies
-    bigram_counts = defaultdict(int)  # Store bigram frequencies as integer
-    with open(train, 'r') as file:
+    bigram_list = []  # Store all bigram tokens
+
+    with open(train, 'r', encoding="utf-8") as file:
         for line in file:
             words = line.strip().split()
-            unigram_counts.update(words)  # Update unigram counts which are necessary for MLE calculation
-            
             for i in range(len(words) - 1):
-                bigram = (words[i], words[i + 1])  # Create bigram using a tuple
-                bigram_counts[bigram]+= 1  # Count bigram occurrences
+                bigram = (words[i], words[i + 1])  
+                bigram_list.append(bigram)  # Keep all occurrences
 
-    bigram_model = {} #dictionary to store bigram probabilities
-    for bigram, count in bigram_counts.items():
-        prev_word = bigram[0]
-        bigram_model[bigram] = count / unigram_counts[prev_word]
+    bigram_counts = Counter(bigram_list)  # Count occurrences
+    bigram_model = {bigram: count / len(bigram_list) for bigram, count in bigram_counts.items()}
 
     # Save model to JSON
-    bigram_file = "bigram_model" + train +".json"
+    bigram_file = "bi_" + train + ".json"
     with open(bigram_file, "w") as f:
-        json.dump({str(k): v for k, v in bigram_model.items()}, f, indent=4)
+        json.dump(
+            {
+                "bigrams": [str(k) for k in bigram_list],  # Store all occurrences
+                "probabilities": {str(k): v for k, v in bigram_model.items()}
+            },
+            f, indent=4
+        )
 
     print("Trained and saved Bigram Model successfully.")
-    return bigram_model, bigram_counts, unigram_counts
+    return bigram_model, bigram_counts
 
 
 
@@ -84,33 +86,10 @@ while True:
 
      #1. Unigram Language Model
     if switch == "1":
-        #Check if unigram model exists
-        unigram_file = "unigram_model.json"
+
         print("\nUnigram Language Model selected...")
-
-        if os.path.exists(unigram_file):
-            print(" A saved unigram model exists. What would you like to do?")
-            print("1. Train a new model")
-            print("2. Load an existing model")
-            uni_choice = input("Enter your choice (1/2): ").strip()
-        else:
-            print("No existing model found. You must train a new model.")
-            uni_choice = "1"
-
-        if uni_choice == "1":
-            print(" Unigram Language Model...")
-            # Train the Unigram Model
-            unigram = train_unigram(data_model)
-
-        elif uni_choice == "2":
-                print("Loading existing unigram model...")
-                with open(unigram_file, 'r') as file:
-                    unigram = json.load(file)
-
-        else:
-            print("Invalid input. Please enter a valid number.")
-            continue
-
+        # Train the Unigram Model
+        unigram = train_unigram(data_model)
         # Compute the sum of all unigram probabilities (must equal one)
         prob_sum = sum(unigram.values())
 
@@ -119,48 +98,21 @@ while True:
         print(f"Sum of unigram probabilities: {prob_sum:.6f}")  # Format to 6 decimal places
         print(f"Total words in Corpus:{len(unigram)}")
 
-        
-
-
     #2. Bigram Language Model
     elif switch == "2":
-        bigram_file = "bigram_model.json"
         print("\nBigram Language Model selected...")
 
-        if os.path.exists(bigram_file):
-            print(" A saved bigram model exists. What would you like to do?")
-            print("1. Train a new model")
-            print("2. Load an existing model")
-            bi_choice = input("Enter your choice (1/2): ")
-        else:
-            print("No existing model found. You must train a new model.")
-            bi_choice = "1"
-
-        if bi_choice == "1":
-            print("Training Bigram Language Model...")
-            # Train the Bigram Model
-            bigram, bigram_counts, unigram_counts = train_bigram(data_model)
-
-        elif bi_choice == "2":
-            print("Loading existing bigram model...")
-            with open(bigram_file, "r") as f:
-                bigram = {eval(k): v for k, v in json.load(f).items()}
-
-        else:
-            print("Invalid input. Please enter a valid number.")
-            continue
-        
+        # Train the Bigram Model
+        bigram, bigram_counts = train_bigram(data_model)
     
         # Print sample bigram probabilities
         print(f"\n Success!!")
         print("\nBigram Model (first 10 probabilities):")
         for bigram, prob in list(bigram.items())[:10]:  # Show first 10 bigrams
-            print(f"{bigram}: {prob:.6f}")
+            print(f"{bigram}: {prob:.4f}")
 
         # Print total unique bigrams
-        print(f"\nTotal Unique Bigrams: {len(bigram)}")
-
-
+        print(f"\nTotal Unique Bigrams: {len(bigram_counts)}")
 
     elif switch == "3":
         #3. Bigram Language Model with Add-One Smoothing
