@@ -109,7 +109,7 @@ while True:
         print("\nBigram Language Model selected...")
 
         # Train the Bigram Model
-        bigram, bigram_counts = train_bigram(data_model)
+        bigram, bigram_counts = train_bigram(data_model, smoothing=False)
     
         # Print sample bigram probabilities
         print(f"\n Success!!")
@@ -123,7 +123,7 @@ while True:
     #3. Bigram Language Model with Add-One Smoothing
     elif switch == "3":
         print("\nTraining Bigram Language Model with Add-One Smoothing...")
-        bigram_add_one, bigram_counts = train_bigram_add_one(data_model)
+        bigram_add_one, bigram_counts = train_bigram(data_model, smoothing=True)
         
         # Print sample bigram probabilities
         print(f"\n Success!!")
