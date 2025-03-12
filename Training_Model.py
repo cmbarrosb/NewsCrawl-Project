@@ -43,7 +43,7 @@ def train_bigram(train, smoothing=False):
     bigram_list = []  # Store all bigram tokens
     unigram_counts = Counter()  # Store unigram counts neeeded for calculations
 
-    with open(train, 'r', encoding="utf-8") as file:
+    with open(train, 'r') as file:
         for line in file:
             words = line.strip().split()
             unigram_counts.update(words)  # Count unigram occurrences
@@ -69,7 +69,7 @@ def train_bigram(train, smoothing=False):
         json.dump(
             {
                 "Bigrams": [str(k) for k in bigram_list],  # Store all bigram tokens
-                "probabilities": bigram_model , # Store computed probabilities
+                "probabilities": {str(k): v for k, v in bigram_model.items()} , # Store computed probabilities as a set of bigrams
                 "unigram_counts": unigram_counts,
                 "vocab_size": vocab
                 # vocabulary and unigram counts are needed for calculations of the log probabilities for unseen bigrams in testing

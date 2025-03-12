@@ -27,7 +27,7 @@ def vocabulary(json_path):
 #How many word tokens are there in the training corpus? Do not include the start of sentence padding symbol <s>.
 
 #Answer 2:
-# The number of word tokens in the training data CBtrain_processed.txt is 2468210
+# The number of word tokens in the training data is 2468210
 
 def count_tokens(file):
     #Counts total word tokens in a file, excluding <s>
@@ -57,18 +57,18 @@ def count_tokens(file):
 #This function calculates the percentage of unseen word tokens and word types in the test data.
 def unseen_percentage(train, test):
 
-    #Gets the unique words in the training data
-    train_vocab = {word for line in open(train, "r") for word in line.strip().split()}
+    #Gets the unique words in the training data except for <s>
+    train_vocab = {word for line in open(train, "r") for word in line.split() if word != "<s>"}
 
-    #Get the words in the test data
-    test_words = [word for line in open(test, "r") for word in line.strip().split()]
+    #Get the words in the test data except for <s>
+    test_words = [word for line in open(test, "r") for word in line.split() if word != "<s>"]
 
-    #Get the unique words in the test data
+    #Get the unique words in the test data with already <s> removed
     test_vocab = set(test_words)
 
     #Calculate unseen tokens and types
-    unseen_tokens = sum(1 for word in test_words if word not in train_vocab)
-    unseen_types = len(test_vocab - train_vocab)
+    unseen_tokens = sum(1 for word in test_words if word not in train_vocab) #Count by adding 1 for each unseen token
+    unseen_types = len(test_vocab - train_vocab) #set difference to get unseen types
 
     #Calculate percentages
     unseen_token_percentage = (unseen_tokens / len(test_words)) * 100
@@ -86,13 +86,13 @@ def unseen_percentage(train, test):
 def compute_unseen_bigrams(train_bigram_file, test_bigram_file):
     
     with open(train_bigram_file, "r") as f:
-        train_bigrams = set(eval(k) for k in json.load(f)["bigrams"])  # Load bigrams as a set
+        train_bigrams = set(eval(k) for k in json.load(f)["Bigrams"])  # Load bigrams as a set
 
     with open(test_bigram_file, "r") as f:
         test_bigram_data = json.load(f)
-        test_bigrams = test_bigram_data["bigrams"]
+        test_bigrams = test_bigram_data["Bigrams"]
 
-   # Count occurrences of bigrams in the test set
+   # Count occurrences of unique bigrams in the test set
     test_bigram_counts = Counter(eval(k) for k in test_bigrams)
 
     # Identify unseen bigram types
@@ -213,7 +213,7 @@ while True:
         data=input("Enter the file to compute log probabilities: ")
         unigram_file = input("Enter the unigram JSON file name: ")
         bigram_file = input("Enter the bigram JSON file name: ")
-        bigram_add_one_file = input("Enter the bigram (Add-One smoothing) JSON file name: ")`
+        bigram_add_one_file = input("Enter the bigram (Add-One smoothing) JSON file name: ")
 
         # Compute log probabilities
         log_unigram, log_bigram, log_smooth = log_probability(data, unigram_file, bigram_file, bigram_add_one_file)
