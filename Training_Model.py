@@ -32,7 +32,7 @@ def train_unigram(train):
         unigram_model[word] = count / total_words 
 
     # Save model to JSON
-    unigram_file = "uni_" + train + ".json"
+    unigram_file = "uni_" + os.path.splitext(train)[0] + ".json"
     with open(unigram_file, "w") as f:
         json.dump(unigram_model, f, indent=4)
 
@@ -41,32 +41,35 @@ def train_unigram(train):
 
 def train_bigram(train, smoothing=False):
     bigram_list = []  # Store all bigram tokens
+    unigram_counts = Counter()  # Store unigram counts neeeded for calculations
 
     with open(train, 'r', encoding="utf-8") as file:
         for line in file:
             words = line.strip().split()
-            for i in range(len(words) - 1):
-                bigram = (words[i], words[i + 1])
-                bigram_list.append(bigram)  # Keep all occurrences
+            unigram_counts.update(words)  # Count unigram occurrences
+            bigram_list.extend(zip(words, words[1:]))  # Collect bigrams
 
-    bigram_counts = Counter(bigram_list)  # Count occurrences
-    total_bigrams = len(bigram_list)  # Count all bigrams (including duplicates)
+    bigram_counts = Counter(bigram_list)  # Count occurrences of each bigram
+    vocab = len(unigram_counts)  # Vocabulary size based on unique words
 
-    # Apply Add-One Smoothing if requested
+    # Compute probabilities
+    #P(w2|w1) = count(w1, w2) / count(w1) where count(w1) is the unigram count 
     if smoothing:
-        vocab = len(set(bigram_counts.keys()))  # Vocabulary size (unique bigrams)
-        bigram_model = {bigram: (count + 1) / (total_bigrams + vocab) for bigram, count in bigram_counts.items()}
-        bigram_file = "bi_1_" + train + ".json"  # Save as Add-One smoothing version
+        bigram_model = {
+            bigram: (count + 1) / (unigram_counts[bigram[0]] + vocab)  #unigram_counts[bigram[0]] is the count of w1
+            for bigram, count in bigram_counts.items()
+        }
+        bigram_file = "bi_1_" + os.path.splitext(train)[0] + ".json"
     else:
-        bigram_model = {bigram: count / total_bigrams for bigram, count in bigram_counts.items()}
-        bigram_file = "bi_" + train + ".json"  # Save as standard bigram model
+        bigram_model = {bigram: count / unigram_counts[bigram[0]] for bigram, count in bigram_counts.items()}
+        bigram_file = "bi_" + os.path.splitext(train)[0] + ".json"
 
     # Save model to JSON
     with open(bigram_file, "w") as f:
         json.dump(
             {
-                "bigrams": [str(k) for k in bigram_list],  # Store all occurrences
-                "probabilities": {str(k): v for k, v in bigram_model.items()}
+                "Bigrams": [str(k) for k in bigram_list],  # Store all bigram tokens
+                "probabilities": bigram_model  # Store computed probabilities
             },
             f, indent=4
         )
