@@ -39,8 +39,7 @@ def train_unigram(train):
     print("Trained and saved Unigram Model successfully.")
     return unigram_model
 
-#Bigram Function
-def train_bigram(train):
+def train_bigram(train, smoothing=False):
     bigram_list = []  # Store all bigram tokens
 
     with open(train, 'r', encoding="utf-8") as file:
@@ -51,15 +50,18 @@ def train_bigram(train):
                 bigram_list.append(bigram)  # Keep all occurrences
 
     bigram_counts = Counter(bigram_list)  # Count occurrences
-    bigram_model = {}  # Initialize an empty dictionary
     total_bigrams = len(bigram_list)  # Count all bigrams (including duplicates)
 
-    #  Loop through each bigram and compute probability
-    for bigram, count in bigram_counts.items():
-        bigram_model[bigram] = count / total_bigrams  # Compute probability
+    # Apply Add-One Smoothing if requested
+    if smoothing:
+        vocab = len(set(bigram_counts.keys()))  # Vocabulary size (unique bigrams)
+        bigram_model = {bigram: (count + 1) / (total_bigrams + vocab) for bigram, count in bigram_counts.items()}
+        bigram_file = "bi_1_" + train + ".json"  # Save as Add-One smoothing version
+    else:
+        bigram_model = {bigram: count / total_bigrams for bigram, count in bigram_counts.items()}
+        bigram_file = "bi_" + train + ".json"  # Save as standard bigram model
 
     # Save model to JSON
-    bigram_file = "bi_" + train + ".json"
     with open(bigram_file, "w") as f:
         json.dump(
             {
@@ -69,42 +71,7 @@ def train_bigram(train):
             f, indent=4
         )
 
-    print("Trained and saved Bigram Model successfully.")
-    return bigram_model, bigram_counts
-
-
-def train_bigram_add_one(train):
-    bigram_list = []  # Store all bigram tokens
-
-    with open(train, 'r', encoding="utf-8") as file:
-        for line in file:
-            words = line.strip().split()
-            for i in range(len(words) - 1):
-                bigram = (words[i], words[i + 1])  
-                bigram_list.append(bigram)  # Keep all occurrences
-
-    bigram_counts = Counter(bigram_list)  # Count occurrences
-    vocab = len(set(bigram_counts.keys()))  # Vocabulary size (unique bigrams)
-
-    # Compute Add-One Smoothed Probabilities (Expanded for clarity)
-    bigram_model = {}
-    total_bigrams = len(bigram_list)  # Total occurrences of all bigrams
-
-    for bigram, count in bigram_counts.items():
-        bigram_model[bigram] = (count + 1) / (total_bigrams + vocab)  # Apply smoothing
-
-    # Save model to JSON
-    bigram_file = "bi_1_" + train + ".json"
-    with open(bigram_file, "w") as f:
-        json.dump(
-            {
-                "bigrams": [str(k) for k in bigram_list],  # Store all occurrences
-                "probabilities": {str(k): v for k, v in bigram_model.items()}
-            },
-            f, indent=4
-        )
-
-    print("Trained and saved Bigram Model with Add-One Smoothing successfully.")
+    print(f"Trained and saved {'Bigram Model with Add-One Smoothing' if smoothing else 'Bigram Model'} successfully.")
     return bigram_model, bigram_counts
 
 
