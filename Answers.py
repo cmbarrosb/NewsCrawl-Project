@@ -20,9 +20,6 @@ def vocabulary(json_path):
     if "<s>" in unigram_model:
         del unigram_model["<s>"]
     return len(unigram_model)
-json_path = "unigram_model.json"  # Adjust if needed
-vocab_size = vocabulary(json_path)
-print(f"Vocabulary size (excluding <s>): {vocab_size}")
 
 #Question 2:
 #How many word tokens are there in the training corpus? Do not include the start of sentence padding symbol <s>.
@@ -39,11 +36,6 @@ def count_tokens(file):
             total_tokens += len(words) - words.count("<s>")  # Exclude <s>
 
     return total_tokens
-
-# Example usage
-file_path = "CBtrain_processed.txt"  # Adjust path if needed
-total_tokens = count_tokens(file_path)
-print(f"Total word tokens (excluding <s>): {total_tokens}")
 
 
 #Question 3:
@@ -82,8 +74,67 @@ def unseen_percentage(train, test):
 
     return unseen_token_percentage, unseen_type_percentage
 
-train = "CBtrain_processed.txt"
-test = "CBtest_processed.txt"
-result= unseen_percentage(train, test)
-print(f"Percentage of unseen word tokens in the test data: {result[0]:.2f}%")
-print(f"Percentage of unseen word types in the test data: {result[1]:.2f}%")
+#Question 4:
+
+
+#WARNING THIS FUNCTION ASSUMES YOU HAVE REATED TWO BIGRAM JSON FILES FOR TRAIN AND TEST DATA
+#IF YOU HAVE NOT DONE SO, PLEASE RUN THE TRAINING_MODEL.PY FILE TO CREATE THE BIGRAM JSON FILES
+
+#Computes the percentage of unseen bigram types and tokens in the test set
+def compute_unseen_bigrams(train_bigram_file, test_bigram_file):
+    
+    with open(train_bigram_file, "r") as f:
+        train_bigrams = set(eval(k) for k in json.load(f).keys())
+
+    with open(test_bigram_file, "r") as f:
+        test_bigram_counts = {eval(k): v for k, v in json.load(f).items()}
+
+    test_bigrams = set(test_bigram_counts.keys())
+    unseen_bigram_types = test_bigrams - train_bigrams
+    unseen_bigram_tokens = sum(v for k, v in test_bigram_counts.items() if k not in train_bigrams)
+
+    unseen_bigram_type_percentage = (len(unseen_bigram_types) / len(test_bigrams)) * 100
+    unseen_bigram_token_percentage = (unseen_bigram_tokens / sum(test_bigram_counts.values())) * 100
+
+    return unseen_bigram_type_percentage, unseen_bigram_token_percentage        
+
+
+
+print("Welcome. This program will answer questions based on the pre-processing and training steps.")
+print("Please enter the question number  or 'exit' to quit the program.")
+
+while True:
+    question = input("Enter the question number (1-4) or 'exit': ").strip()
+
+    if question == "1":
+        json_path = "unigram_model.json"  # Adjust if needed
+        vocab_size = vocabulary(json_path)
+        print(f"Vocabulary size (excluding <s>): {vocab_size}")
+
+    elif question == "2":
+        file_path = "CBtrain_processed.txt"  # Adjust path if needed
+        total_tokens = count_tokens(file_path)
+        print(f"Total word tokens (excluding <s>): {total_tokens}")
+
+    elif question == "3":
+        train = "CBtrain_processed.txt"
+        test = "CBtest_processed.txt"
+        result= unseen_percentage(train, test)  
+        print(f"Percentage of unseen word tokens in the test data: {result[0]:.2f}%")
+        print(f"Percentage of unseen word types in the test data: {result[1]:.2f}%")
+
+    elif question == "4":
+        train_bigram_json = "bigram_model_train.json"
+        test_bigram_json = "bigram_model_test.json"
+        unseen_type_pct, unseen_token_pct = compute_unseen_bigrams(train_bigram_json, test_bigram_json)
+        print(f"Unseen bigram types: {unseen_type_pct:.2f}%")
+        print(f"Unseen bigram tokens: {unseen_token_pct:.2f}%")
+    
+
+
+    elif question.lower() == "exit":
+        print("Exiting the program...")
+        break
+
+    else:
+        print("Invalid question number. Please enter a valid question number (1-4) or 'exit'.")
