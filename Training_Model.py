@@ -69,7 +69,10 @@ def train_bigram(train, smoothing=False):
         json.dump(
             {
                 "Bigrams": [str(k) for k in bigram_list],  # Store all bigram tokens
-                "probabilities": bigram_model  # Store computed probabilities
+                "probabilities": bigram_model , # Store computed probabilities
+                "unigram_counts": unigram_counts,
+                "vocab_size": vocab
+                # vocabulary and unigram counts are needed for calculations of the log probabilities for unseen bigrams in testing
             },
             f, indent=4
         )
