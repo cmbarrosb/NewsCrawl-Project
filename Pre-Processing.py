@@ -79,6 +79,12 @@ def verify(file_path):
 
 
 # User interface for pre-processing options
+# Get file names from user
+train = input("Enter the training data file name: ") 
+test = input("Enter the test data file name: ")
+processed_train = input("New name for the processed train file: ")
+processed_test = input("New name for the processed test file: ")
+
 while True:
     print("\n")
     print("Select a pre-processing option:")
@@ -89,11 +95,6 @@ while True:
     print("5 - Verify padding and word counts")
     print("6 - Exit")
     choice = input("Enter your choice: ").strip()
-
-    train = input("Enter the training data file name: ").strip()
-    test = input("Enter the test data file name: ").strip()
-    processed_train = input("New name for the processed train file: ").strip()
-    processed_test = input("New name for the processed test file: ").strip
     
     if choice == "1":
         add_pad(train, processed_train)
@@ -111,9 +112,9 @@ while True:
         replace_singletons(processed_train, singletons) #replace singletons with <unk>
 
     elif choice == "4":
-        train= set(word_frequency(processed_train).keys())
+        train_vocab= set(word_frequency(processed_train).keys())
         # Apply replacement in test data
-        replace_unknowns(processed_test, train)
+        replace_unknowns(processed_test, train_vocab)
         print("Replaced unseen words with <unk> in test data")  # Function to replace unknowns
 
     elif choice == "5":
