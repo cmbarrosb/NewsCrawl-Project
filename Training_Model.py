@@ -46,7 +46,7 @@ def train_bigram(train, smoothing=False):
         for line in file:
             words = line.strip().split()
             for i in range(len(words) - 1):
-                bigram = (words[i], words[i + 1])  
+                bigram = (words[i], words[i + 1])
                 bigram_list.append(bigram)  # Keep all occurrences
 
     bigram_counts = Counter(bigram_list)  # Count occurrences
