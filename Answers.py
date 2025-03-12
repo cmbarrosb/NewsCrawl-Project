@@ -106,8 +106,20 @@ def compute_unseen_bigrams(train_bigram_file, test_bigram_file):
 
     return unseen_bigram_type_percentage, unseen_bigram_token_percentage       
 
+#Question 5: 
+    #Compute the log probability of the following sentence under the three models:
+        # I look forward to hearing your reply .
+    # Please list all of the parameters required to compute the probabilities and show the complete calculation. Which of the parameters have zero values under each model? Use log base 2 in your calculations.
 
 
+
+
+
+
+
+
+
+# Main function to interact with the user
 print("Welcome. This program will answer questions based on the pre-processing and training steps.")
 
 
